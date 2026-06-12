@@ -1,0 +1,83 @@
+# Task 10 – React + Flask Job Tracker Write-up
+ 1. What is React Router and how did you implement a protected route? Show the ProtectedRoute component code.
+React Router is a library used for navigation in React applications. It allows users to move between different pages without reloading the browser. 
+In my project, I used React Router to navigate between Login, Register, Dashboard, Applications, and Add Application pages.
+A protected route is used to prevent unauthorized users from accessing certain pages.
+If the user is not logged in, they are redirected to the Login page.
+ProtectedRoute component:
+```jsx
+import { Navigate } from "react-router-dom";
+
+function ProtectedRoute({ children }) {
+  const user = localStorage.getItem("user");
+
+  return user ? children : <Navigate to="/" />;
+}
+
+export default ProtectedRoute;
+```This component checks whether user information exists in localStorage. If it exists, the requested page is displayed. Otherwise, the user is redirected to the Login page.
+ 2. What is the difference between Axios and fetch()? Why did you use Axios?
+Both Axios and fetch() are used to make HTTP requests from the frontend to the backend.
+ fetch()
+* Built into JavaScript
+* Requires manual conversion using `.json()`
+* Requires more code for error handling
+* No automatic request/response interceptors
+ Axios
+* External library
+* Automatically converts JSON data
+* Better error handling
+* Easier configuration for API calls
+* Supports interceptors and default settings
+I used Axios because it simplifies API requests and reduces boilerplate code. It also makes handling errors and backend communication much easier.
+Example:
+```jsx
+const res = await api.get("/applications");
+```
+This is cleaner and easier to maintain than using fetch().
+---
+3. How does your React app know if the user is logged in? Where is that state stored and how does it reach Navbar?
+When a user logs in successfully, the backend verifies the credentials and sends a success response.
+The React application stores the logged-in user information in localStorage:
+```jsx
+localStorage.setItem("user", JSON.stringify(res.data.user));
+Whenever the application loads, components can check localStorage to determine whether the user is logged in.
+Example:
+```jsx
+const user = JSON.parse(localStorage.getItem("user"));
+```The Navbar accesses the same localStorage data and displays navigation links based on the user's login status.
+Flow:
+1. User logs in.
+2. User data is stored in localStorage.
+3. ProtectedRoute checks localStorage.
+4. Navbar reads localStorage.
+5. Logged-in users can access protected pages.
+4. What was the hardest part of connecting React to Flask and how did you solve it?
+The hardest part was connecting the React frontend running on one port and the Flask backend running on another port.
+Initially, API requests failed due to:
+* CORS errors
+* Incorrect API URLs
+* Session handling issues
+* Backend routes not matching frontend requests
+To solve these problems:
+Enabled CORS in Flask
+python
+from flask_cors import CORS
+CORS(app, supports_credentials=True)
+### Configured Axios Base URL
+```jsx
+import axios from "axios";
+const api = axios.create({
+  baseURL: "http://localhost:5000",
+  withCredentials: true,
+});
+
+export default api;
+### Tested APIs using Postman
+I verified each endpoint separately:
+* POST /register
+* POST /login
+* GET /applications
+* POST /applications
+After confirming that the backend APIs worked correctly, I connected them to the React frontend and ensured data was displayed properly on the Dashboard and Applications pages.
+This debugging process helped me understand how frontend and backend systems communicate using REST APIs.
